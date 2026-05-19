@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/talhaahmed505/pastebox/issues"
   },
-  "homepage": "https://github.com/talhaahmed505/pastebox#readme"
+  "homepage": "https://github.com/talhaahmed505/pastebox#readme",
+  "dependencies": {
+    "ws": "^8.20.1"
+  }
 }
