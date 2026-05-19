@@ -1,0 +1,22 @@
+{
+  "name": "pastebox",
+  "version": "1.0.0",
+  "description": "Pastebox supports post commands sent to /cli for the same functionality as the web page.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/talhaahmed505/pastebox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/talhaahmed505/pastebox/issues"
+  },
+  "homepage": "https://github.com/talhaahmed505/pastebox#readme"
+}

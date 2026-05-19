@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pastebox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #2e2e2e;
+      --panel-dark:  #383838;
+      --panel-light: #404040;
+      --moss:        #3d5220;
+      --moss-dark:   #2c3b16;
+      --moss-btn:    #4a6326;
+      --cli-bar:     #252525;
+      --wheat:       #f0d49a;
+      --wheat-bright:#faecc8;
+      --wheat-dim:   #b89e6e;
+      --text-dim:    #8a7455;
+      --border:      #4a4a4a;
+      --code:        #a8c070;
+      --font-head:   "Playfair Display", Georgia, serif;
+      --font-body:   "Source Serif 4", Georgia, serif;
+      --font-mono:   "Courier New", Courier, monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--wheat);
+      font-family: var(--font-body);
+    }
+
+    body {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 36px;
+      background: var(--moss);
+      border-bottom: 3px solid var(--moss-dark);
+    }
+
+    header h1 {
+      font-family: var(--font-head);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--wheat-bright);
+      letter-spacing: 0.03em;
+    }
+
+    #status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--wheat-dim);
+    }
+
+    #status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--wheat-dim);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    #status-dot.connected { background: var(--wheat-bright); box-shadow: 0 0 8px var(--wheat-bright); }
+    #status-dot.error     { background: #cc6655; }
+
+    /* ── CLI BAR ── */
+    #cli-bar {
+      background: var(--cli-bar);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 36px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .cli-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 0.72rem;
+      color: var(--wheat-dim);
+      white-space: nowrap;
+    }
+
+    .cli-item .label {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.62rem;
+      color: var(--text-dim);
+    }
+
+    .cli-item code {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--code);
+      background: #1a1a1a;
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid #333;
+      user-select: all;
+    }
+
+    .cli-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ── MAIN PANELS ── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      padding: 28px 32px;
+      gap: 14px;
+    }
+
+    .panel:nth-child(1) { background: var(--panel-dark); }
+    .panel:nth-child(2) { background: var(--panel-light); border-left: 2px solid var(--border); }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--wheat-dim);
+    }
+
+    .panel-label em {
+      font-style: normal;
+      color: var(--wheat-bright);
+      font-weight: 600;
+    }
+
+    #copy-btn {
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: var(--moss-btn);
+      color: var(--wheat-bright);
+      border: 1px solid var(--moss-dark);
+      padding: 5px 14px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    #copy-btn:hover  { background: var(--moss-dark); }
+    #copy-btn.copied { background: var(--wheat); color: var(--moss); border-color: var(--wheat-dim); }
+
+    textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      color: var(--wheat-bright);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.8;
+      font-weight: 400;
+      caret-color: var(--wheat-bright);
+    }
+
+    textarea::placeholder { color: var(--text-dim); font-style: italic; }
+
+    #display {
+      flex: 1;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.8;
+      font-weight: 400;
+      color: var(--wheat-bright);
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-y: auto;
+    }
+
+    #display:empty::before {
+      content: "waiting for input...";
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    @keyframes flash {
+      0%   { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    #display.flash { animation: flash 0.2s ease-out; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    @media (max-width: 640px) {
+      #cli-bar { gap: 16px; padding: 10px 16px; }
+      .cli-divider { display: none; }
+      main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+      .panel:nth-child(2) { border-left: none; border-top: 2px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>pastebox</h1>
+  <div id="status">
+    <div id="status-dot"></div>
+    <span id="status-text">connecting</span>
+  </div>
+</header>
+
+<div id="cli-bar">
+  <div class="cli-item">
+    <span class="label">read</span>
+    <code>curl pastebox.talhaahmed.dev/cli</code>
+  </div>
+  <div class="cli-divider"></div>
+  <div class="cli-item">
+    <span class="label">write</span>
+    <code>curl -X POST pastebox.talhaahmed.dev/cli --data "text"</code>
+  </div>
+</div>
+
+<main>
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-label"><em>01</em> &nbsp;input</div>
+    </div>
+    <textarea id="input" placeholder="paste or type here..."></textarea>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-label"><em>02</em> &nbsp;display</div>
+      <button id="copy-btn">copy</button>
+    </div>
+    <div id="display"></div>
+  </div>
+</main>
+
+<script>
+  const input   = document.getElementById("input");
+  const display = document.getElementById("display");
+  const dot     = document.getElementById("status-dot");
+  const statusT = document.getElementById("status-text");
+  const copyBtn = document.getElementById("copy-btn");
+
+  let ws;
+  let reconnectTimer;
+
+  function setStatus(state, label) {
+    dot.className = state;
+    statusT.textContent = label;
+  }
+
+  function flashDisplay() {
+    display.classList.remove("flash");
+    void display.offsetWidth;
+    display.classList.add("flash");
+  }
+
+  function updateDisplay(text) {
+    display.textContent = text;
+    flashDisplay();
+  }
+
+  function connect() {
+    const proto = location.protocol === "https:" ? "wss" : "ws";
+    ws = new WebSocket(`${proto}://${location.host}`);
+
+    ws.addEventListener("open", () => {
+      setStatus("connected", "connected");
+      clearTimeout(reconnectTimer);
+    });
+
+    ws.addEventListener("message", (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === "init" || msg.type === "update") {
+          updateDisplay(msg.text);
+          if (msg.type === "init" && input.value === "") {
+            input.value = msg.text;
+          }
+        }
+      } catch {}
+    });
+
+    ws.addEventListener("close", () => {
+      setStatus("error", "disconnected");
+      reconnectTimer = setTimeout(connect, 2000);
+    });
+
+    ws.addEventListener("error", () => setStatus("error", "error"));
+  }
+
+  input.addEventListener("input", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "update", text: input.value }));
+    }
+    updateDisplay(input.value);
+  });
+
+  copyBtn.addEventListener("click", () => {
+    const text = display.textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = "copied!";
+      copyBtn.classList.add("copied");
+      setTimeout(() => {
+        copyBtn.textContent = "copy";
+        copyBtn.classList.remove("copied");
+      }, 1500);
+    });
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "update", text: "" }));
+    }
+  });
+
+  connect();
+</script>
+</body>
+</html>
