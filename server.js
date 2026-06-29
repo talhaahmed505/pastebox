@@ -5,6 +5,7 @@ const { WebSocketServer } = require("ws");
 
 const PORT = 2002;
 let currentText = "";
+let cliEnabled = false;
 
 const httpServer = http.createServer((req, res) => {
   if (req.url === "/" || req.url === "/index.html") {
@@ -20,15 +21,16 @@ const httpServer = http.createServer((req, res) => {
     });
 
   } else if (req.url === "/cli" && req.method === "GET") {
+    if (!cliEnabled) { res.writeHead(404); res.end("Not found"); return; }
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end(currentText);
 
   } else if (req.url === "/cli" && req.method === "POST") {
+    if (!cliEnabled) { res.writeHead(404); res.end("Not found"); return; }
     let body = "";
     req.on("data", (chunk) => { body += chunk.toString(); });
     req.on("end", () => {
       currentText = body;
-      // Broadcast to all connected WebSocket clients
       wss.clients.forEach((client) => {
         if (client.readyState === 1) {
           client.send(JSON.stringify({ type: "update", text: currentText }));
@@ -38,20 +40,25 @@ const httpServer = http.createServer((req, res) => {
       res.end("ok\n");
     });
 
-  } 
-  else if (req.url === "/docker.sh") {
-  const filePath = path.join(__dirname, "docker.sh");
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end("docker.sh not found");
-      return;
-    }
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(data);
-  });
-  
-} else {
+  } else if (req.url === "/docker.sh") {
+    if (!cliEnabled) { res.writeHead(404); res.end("Not found"); return; }
+    const filePath = path.join(__dirname, "docker.sh");
+    fs.readFile(filePath, (err, data) => {
+      if (err) { res.writeHead(404); res.end("docker.sh not found"); return; }
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end(data);
+    });
+
+  } else if (req.url === "/admin/status" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ cliEnabled }));
+
+  } else if (req.url === "/admin/toggle" && req.method === "POST") {
+    cliEnabled = !cliEnabled;
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ cliEnabled }));
+
+  } else {
     res.writeHead(404);
     res.end("Not found");
   }
@@ -79,6 +86,7 @@ wss.on("connection", (ws) => {
   ws.on("close", () => {
     if (wss.clients.size === 0) {
       currentText = "";
+      cliEnabled = false;
     }
   });
 });

@@ -163,13 +163,11 @@
       font-weight: 600;
     }
 
-    #copy-btn {
+    #copy-btn, #cli-toggle {
       font-family: var(--font-body);
       font-size: 0.65rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      background: var(--moss-btn);
-      color: var(--wheat-bright);
       border: 1px solid var(--moss-dark);
       padding: 5px 14px;
       cursor: pointer;
@@ -177,8 +175,22 @@
       transition: background 0.2s, color 0.2s;
     }
 
+    #copy-btn {
+      background: var(--moss-btn);
+      color: var(--wheat-bright);
+    }
+
     #copy-btn:hover  { background: var(--moss-dark); }
     #copy-btn.copied { background: var(--wheat); color: var(--moss); border-color: var(--wheat-dim); }
+
+    #cli-toggle {
+      background: var(--moss-btn);
+      color: var(--wheat-bright);
+    }
+
+    #cli-toggle:hover   { background: var(--moss-dark); }
+    #cli-toggle.off     { background: #4a2020; border-color: #2c1010; color: #cc9988; }
+    #cli-toggle.off:hover { background: #3a1010; }
 
     textarea {
       flex: 1;
@@ -237,9 +249,12 @@
 
 <header>
   <h1>pastebox</h1>
-  <div id="status">
-    <div id="status-dot"></div>
-    <span id="status-text">connecting</span>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <button id="cli-toggle" class="off">public routes off</button>
+    <div id="status">
+      <div id="status-dot"></div>
+      <span id="status-text">connecting</span>
+    </div>
   </div>
 </header>
 
@@ -356,6 +371,25 @@
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: "update", text: "" }));
     }
+  });
+
+  const cliToggle = document.getElementById("cli-toggle");
+
+  function applyToggleState(enabled) {
+    cliToggle.textContent = enabled ? "public routes on" : "public routes off";
+    cliToggle.classList.toggle("off", !enabled);
+  }
+
+  fetch("/admin/status")
+    .then(r => r.json())
+    .then(d => applyToggleState(d.cliEnabled))
+    .catch(() => {});
+
+  cliToggle.addEventListener("click", () => {
+    fetch("/admin/toggle", { method: "POST" })
+      .then(r => r.json())
+      .then(d => applyToggleState(d.cliEnabled))
+      .catch(() => {});
   });
 
   connect();
