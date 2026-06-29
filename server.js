@@ -38,7 +38,20 @@ const httpServer = http.createServer((req, res) => {
       res.end("ok\n");
     });
 
-  } else {
+  } 
+  else if (req.url === "/docker.sh") {
+  const filePath = path.join(__dirname, "docker.sh");
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(404);
+      res.end("docker.sh not found");
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end(data);
+  });
+  
+} else {
     res.writeHead(404);
     res.end("Not found");
   }
